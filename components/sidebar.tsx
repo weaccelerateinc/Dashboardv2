@@ -26,12 +26,6 @@ const navItems = [
     description: "Configure and manage payment methods"
   },
   { 
-    name: "Customer Profile", 
-    href: "/customer-profile", 
-    icon: Users,
-    description: "View and manage customer data"
-  },
-  { 
     name: "Billing", 
     href: "/billing", 
     icon: Receipt,

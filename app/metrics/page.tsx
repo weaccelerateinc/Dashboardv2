@@ -1,13 +1,12 @@
 "use client"
 
 import { Header } from "@/components/header"
-import { BarChart3, Users, UserX, ShoppingCart, Calendar, ChevronDown } from "lucide-react"
+import { BarChart3, Calendar, ChevronDown } from "lucide-react"
 import { useState } from "react"
-import { format } from "date-fns"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Separator } from "@/components/ui/separator"
-import { Bar } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +14,7 @@ import {
   BarElement,
   Title,
   Tooltip,
-} from 'chart.js';
+} from 'chart.js'
 
 // Register ChartJS components
 ChartJS.register(
@@ -24,46 +23,57 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-);
+)
 
-// Sample data - replace with your actual metrics
-const metrics = {
-  totalImpressions: {
-    total: "1.2M",
-    daily: [980000, 1100000, 1250000, 1300000, 1150000, 1200000, 1400000]
+// Sample data - replace with your actual data
+const orders = [
+  {
+    id: "ORD-001",
+    customerName: "John Smith",
+    value: 299.99,
+    date: "2024-03-15T10:00:00Z"
   },
-  verifiedUsers: {
-    total: "45.2K",
-    daily: [41000, 42000, 43500, 44000, 44500, 45000, 45200]
+  {
+    id: "ORD-002",
+    customerName: "Sarah Johnson",
+    value: 149.99,
+    date: "2024-03-15T14:30:00Z"
   },
-  unverifiedUsers: "12.8K",
-  totalOrders: "89.3K",
-  twoFactorTriggers: "56.7K",
-  twoFactorCompletions: "52.1K",
-  twoFactorFailures: "4.6K",
-  manualCardEntries: "12.4K",
-  cardsDisplayed: "234.5K",
-  avgCardsPerUser: "3.2",
-  cvvVerifications: "78.9K",
-  cvvVerificationFailures: "3.2K"
-}
-
-const presetRanges = [
-  { name: "Last 7 days", value: "7d" },
-  { name: "Last 30 days", value: "30d" },
-  { name: "Last 90 days", value: "90d" },
-  { name: "Year to date", value: "ytd" },
-  { name: "All time", value: "all" },
+  {
+    id: "ORD-003",
+    customerName: "Michael Brown",
+    value: 499.99,
+    date: "2024-03-14T09:15:00Z"
+  },
+  {
+    id: "ORD-004",
+    customerName: "Emily Davis",
+    value: 199.99,
+    date: "2024-03-14T16:45:00Z"
+  },
+  {
+    id: "ORD-005",
+    customerName: "David Wilson",
+    value: 399.99,
+    date: "2024-03-13T11:20:00Z"
+  },
+  // Add more sample orders as needed
 ]
 
-const last7Days = Array.from({length: 7}, (_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() - (6 - i));
-  return d.toLocaleDateString('en-US', { weekday: 'short' });
-});
+// Sample daily order data for the chart
+const dailyOrders = {
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  datasets: [
+    {
+      label: 'Orders',
+      data: [12, 19, 15, 25, 22, 30, 28],
+      backgroundColor: 'rgb(59, 130, 246)',
+      borderRadius: 4,
+    },
+  ],
+}
 
-// Chart configuration
-const getChartOptions = (color: string) => ({
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -75,94 +85,49 @@ const getChartOptions = (color: string) => ({
     },
   },
   scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: false,
+      },
+    },
     x: {
       grid: {
         display: false,
       },
-      ticks: {
-        font: {
-          size: 10,
-        },
-      },
-    },
-    y: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        display: false,
-      },
     },
   },
-});
-
-const getChartData = (data: number[], color: string) => ({
-  labels: last7Days,
-  datasets: [
-    {
-      data: data,
-      backgroundColor: color,
-      borderRadius: 4,
-      borderSkipped: false,
-    },
-  ],
-});
-
-// Example of updated metric card component
-function MetricCard({ 
-  title, 
-  total, 
-  dailyData, 
-  icon: Icon, 
-  color, 
-  bgColor 
-}: {
-  title: string;
-  total: string;
-  dailyData: number[];
-  icon: any;
-  color: string;
-  bgColor: string;
-}) {
-  return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <h3 className="text-2xl font-bold text-gray-900 mt-2">{total}</h3>
-        </div>
-        <div className={`p-3 ${bgColor} rounded-lg`}>
-          <Icon className={`h-6 w-6 ${color}`} />
-        </div>
-      </div>
-      <div className="h-32 mt-4">
-        <Bar
-          options={getChartOptions(color)}
-          data={getChartData(dailyData, color.replace('text-', 'rgb(var(--'))}
-          height={128}
-        />
-      </div>
-    </div>
-  );
 }
+
+const presetRanges = [
+  { name: "Last 7 days", value: "7d" },
+  { name: "Last 30 days", value: "30d" },
+  { name: "Last 90 days", value: "90d" },
+  { name: "Year to date", value: "ytd" },
+  { name: "All time", value: "all" },
+]
 
 export default function Metrics() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedRange, setSelectedRange] = useState("Last 30 days")
   const [fromDate, setFromDate] = useState<Date>()
   const [toDate, setToDate] = useState<Date>()
-  const [isCustomRange, setIsCustomRange] = useState(false)
 
   const handlePresetSelect = (rangeName: string) => {
     setSelectedRange(rangeName)
-    setIsCustomRange(false)
     setIsOpen(false)
   }
 
   const handleCustomRangeSelect = () => {
     if (fromDate && toDate) {
-      setSelectedRange(`${format(fromDate, 'MMM d, yyyy')} - ${format(toDate, 'MMM d, yyyy')}`)
-      setIsCustomRange(true)
+      const formatDate = (date: Date) => {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      };
+      setSelectedRange(`${formatDate(fromDate)} - ${formatDate(toDate)}`)
       setIsOpen(false)
     }
   }
@@ -172,7 +137,7 @@ export default function Metrics() {
       <Header />
       <div className="mt-14 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Metrics</h1>
+          <h1 className="text-3xl font-bold">Order Metrics</h1>
           <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
               <button
@@ -231,204 +196,52 @@ export default function Metrics() {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="grid grid-cols-1 gap-4">
-          {/* Awareness Stage */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-2">
-              <MetricCard
-                title="Total Impressions"
-                total={metrics.totalImpressions.total}
-                dailyData={metrics.totalImpressions.daily}
-                icon={BarChart3}
-                color="text-blue-500"
-                bgColor="bg-blue-50"
-              />
-            </div>
-            <MetricCard
-              title="Verified Users"
-              total={metrics.verifiedUsers.total}
-              dailyData={metrics.verifiedUsers.daily}
-              icon={Users}
-              color="text-green-500"
-              bgColor="bg-green-50"
-            />
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Unverified Users</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.unverifiedUsers}</h3>
-                </div>
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <UserX className="h-6 w-6 text-yellow-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-yellow-100 rounded-full">
-                  <div className="h-2 bg-yellow-500 rounded-full w-[25%]"></div>
-                </div>
-              </div>
-            </div>
+
+        {/* Orders Chart */}
+        <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Daily Orders</h2>
+          <div className="h-[300px]">
+            <Bar options={chartOptions} data={dailyOrders} />
           </div>
+        </div>
 
-          {/* Authentication Stage */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">2FA Triggers</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.twoFactorTriggers}</h3>
-                </div>
-                <div className="p-3 bg-indigo-50 rounded-lg">
-                  <Users className="h-6 w-6 text-indigo-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-indigo-100 rounded-full">
-                  <div className="h-2 bg-indigo-500 rounded-full w-[60%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">2FA Completions</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.twoFactorCompletions}</h3>
-                </div>
-                <div className="p-3 bg-emerald-50 rounded-lg">
-                  <Users className="h-6 w-6 text-emerald-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-emerald-100 rounded-full">
-                  <div className="h-2 bg-emerald-500 rounded-full w-[55%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">2FA Failures</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.twoFactorFailures}</h3>
-                </div>
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <UserX className="h-6 w-6 text-red-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-red-100 rounded-full">
-                  <div className="h-2 bg-red-500 rounded-full w-[5%]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card Management Stage */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Cards Displayed</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.cardsDisplayed}</h3>
-                </div>
-                <div className="p-3 bg-cyan-50 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-cyan-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-cyan-100 rounded-full">
-                  <div className="h-2 bg-cyan-500 rounded-full w-[50%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Cards Per User</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.avgCardsPerUser}</h3>
-                </div>
-                <div className="p-3 bg-pink-50 rounded-lg">
-                  <Users className="h-6 w-6 text-pink-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-pink-100 rounded-full">
-                  <div className="h-2 bg-pink-500 rounded-full w-[30%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Manual Card Entries</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.manualCardEntries}</h3>
-                </div>
-                <div className="p-3 bg-orange-50 rounded-lg">
-                  <ShoppingCart className="h-6 w-6 text-orange-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-orange-100 rounded-full">
-                  <div className="h-2 bg-orange-500 rounded-full w-[20%]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Transaction Stage */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">CVV Verifications</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.cvvVerifications}</h3>
-                </div>
-                <div className="p-3 bg-teal-50 rounded-lg">
-                  <ShoppingCart className="h-6 w-6 text-teal-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-teal-100 rounded-full">
-                  <div className="h-2 bg-teal-500 rounded-full w-[40%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">CVV Verification Failures</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.cvvVerificationFailures}</h3>
-                </div>
-                <div className="p-3 bg-rose-50 rounded-lg">
-                  <UserX className="h-6 w-6 text-rose-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-rose-100 rounded-full">
-                  <div className="h-2 bg-rose-500 rounded-full w-[10%]"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{metrics.totalOrders}</h3>
-                </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <ShoppingCart className="h-6 w-6 text-purple-500" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 bg-purple-100 rounded-full">
-                  <div className="h-2 bg-purple-500 rounded-full w-[35%]"></div>
-                </div>
-              </div>
+        {/* Orders Table */}
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
+            <div className="relative overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Customer Name</th>
+                    <th scope="col" className="px-6 py-3">Order Value</th>
+                    <th scope="col" className="px-6 py-3">Order ID</th>
+                    <th scope="col" className="px-6 py-3">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="bg-white border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {order.customerName}
+                      </td>
+                      <td className="px-6 py-4">
+                        ${order.value.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4">
+                        {order.id}
+                      </td>
+                      <td className="px-6 py-4">
+                        {new Date(order.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
