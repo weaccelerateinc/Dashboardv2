@@ -4,18 +4,18 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from '../../firebase/config';
 import { User } from 'firebase/auth';
-import { Copy, Eye, EyeOff } from 'lucide-react';
+import { Copy } from 'lucide-react';
 
 interface MerchantInfo {
   id: string;
   name: string;
-  vgsVaultId: string;
-  vgsCopyRouteId: string;
-  vgsOutboundUsername: string;
-  vgsOutboundPassword: string;
-  vgsClientId: string;
-  vgsClientSecret: string;
-  stripeSecretKey: string;
+  stripeSecretKey?: string;
+  checkoutDotComSecretKey?: string;
+  checkoutDotComPublicKey?: string;
+  braintreeMerchantId?: string;
+  braintreePrivateKey?: string;
+  braintreePublicKey?: string;
+  [key: string]: string | undefined;
 }
 
 export function ApiTab() {
@@ -23,7 +23,6 @@ export function ApiTab() {
   const [merchantData, setMerchantData] = useState<MerchantInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -60,18 +59,11 @@ export function ApiTab() {
     navigator.clipboard.writeText(text);
   };
 
-  const toggleSecret = (field: string) => {
-    setShowSecrets(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
-
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Merchant API Settings</CardTitle>
+          <CardTitle>Merchant API Response</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -86,7 +78,7 @@ export function ApiTab() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Merchant API Settings</CardTitle>
+          <CardTitle>Merchant API Response</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-red-600 py-4">
@@ -100,198 +92,132 @@ export function ApiTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Merchant API Settings</CardTitle>
+        <CardTitle>Payment Gateway Configuration</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Merchant ID</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={merchantData?.id || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => handleCopy(merchantData?.id || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Merchant Name</label>
-                <input
-                  type="text"
-                  value={merchantData?.name || ''}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* VGS Configuration */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">VGS Configuration</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vault ID</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={merchantData?.vgsVaultId || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsVaultId || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Copy Route ID</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={merchantData?.vgsCopyRouteId || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsCopyRouteId || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Credentials */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Credentials</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Outbound Username</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={merchantData?.vgsOutboundUsername || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsOutboundUsername || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Outbound Password</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type={showSecrets.vgsOutboundPassword ? "text" : "password"}
-                    value={merchantData?.vgsOutboundPassword || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => toggleSecret('vgsOutboundPassword')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    {showSecrets.vgsOutboundPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsOutboundPassword || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={merchantData?.vgsClientId || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsClientId || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client Secret</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type={showSecrets.vgsClientSecret ? "text" : "password"}
-                    value={merchantData?.vgsClientSecret || ''}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-                    readOnly
-                  />
-                  <button
-                    onClick={() => toggleSecret('vgsClientSecret')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    {showSecrets.vgsClientSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                  <button
-                    onClick={() => handleCopy(merchantData?.vgsClientSecret || '')}
-                    className="p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stripe Configuration */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Stripe Configuration</h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Secret Key</label>
+          {/* Merchant ID - keeping button and Copy icon */}
+          {merchantData?.id && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Merchant ID</label>
               <div className="flex items-center gap-2">
                 <input
-                  type={showSecrets.stripeSecretKey ? "text" : "password"}
-                  value={merchantData?.stripeSecretKey || ''}
+                  type="text"
+                  value={merchantData.id}
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
                   readOnly
                 />
                 <button
-                  onClick={() => toggleSecret('stripeSecretKey')}
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                >
-                  {showSecrets.stripeSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-                <button
-                  onClick={() => handleCopy(merchantData?.stripeSecretKey || '')}
+                  onClick={() => handleCopy(merchantData.id)}
                   className="p-2 text-gray-600 hover:text-gray-900"
                 >
                   <Copy className="h-4 w-4" />
                 </button>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Merchant Name - removed button and Copy icon */}
+          {merchantData?.name && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Merchant Name</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.name}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Stripe Configuration - removed button and Copy icon */}
+          {merchantData?.stripeSecretKey && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Stripe Secret Key</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.stripeSecretKey}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Checkout.com Configuration - removed button and Copy icon */}
+          {merchantData?.checkoutDotComSecretKey && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Checkout.com Secret Key</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.checkoutDotComSecretKey}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {merchantData?.checkoutDotComPublicKey && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Checkout.com Public Key</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.checkoutDotComPublicKey}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Braintree Configuration - removed button and Copy icon */}
+          {merchantData?.braintreeMerchantId && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Braintree Merchant ID</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.braintreeMerchantId}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {merchantData?.braintreePrivateKey && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Braintree Private Key</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.braintreePrivateKey}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {merchantData?.braintreePublicKey && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Braintree Public Key</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={merchantData.braintreePublicKey}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

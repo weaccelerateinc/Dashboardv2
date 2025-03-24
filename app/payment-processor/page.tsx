@@ -75,25 +75,6 @@ export default function PaymentProcessor() {
             </CardContent>
           </Card>
 
-          {/* Fiserv Section */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Fiserv</CardTitle>
-              <div className="flex items-center text-sm text-yellow-600">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                Coming Soon
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500 mb-4">
-                Comprehensive financial technology and payment processing solutions.
-              </p>
-              <div className="space-y-4">
-                <Button className="w-full" disabled>Configure Fiserv</Button>
-              </div>
-            </CardContent>
-          </Card>
-
         </div>
       </div>
     </div>

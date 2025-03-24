@@ -5,107 +5,115 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Header } from "@/components/header"
+import { useToast } from "@/components/ui/use-toast"
+import { Loader2, CheckCircle } from "lucide-react"
+import { getAuth } from "firebase/auth"
 
 export default function ConfigureCheckoutCom() {
-  const [sandboxPublicKey, setSandboxPublicKey] = useState("")
-  const [sandboxSecretKey, setSandboxSecretKey] = useState("")
-  const [productionPublicKey, setProductionPublicKey] = useState("")
-  const [productionSecretKey, setProductionSecretKey] = useState("")
+  const [secretKey, setSecretKey] = useState("")
+  const [publicKey, setPublicKey] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const { toast } = useToast()
+  const auth = getAuth()
 
-  const handleSave = () => {
-    // Add save logic here
-    console.log("Saving API keys:", {
-      sandbox: { public: sandboxPublicKey, secret: sandboxSecretKey },
-      production: { public: productionPublicKey, secret: productionSecretKey }
-    })
+  const handleSaveChanges = async () => {
+    setIsLoading(true)
+    setIsSuccess(false)
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        throw new Error('Not authenticated')
+      }
+
+      const response = await fetch('/api/merchants/update-checkoutcom-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          secretKey,
+          publicKey,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update configuration')
+      }
+
+      setIsSuccess(true)
+      toast({
+        title: "Success",
+        description: "Checkout.com configuration has been updated successfully.",
+        variant: "success",
+      })
+    } catch (error) {
+      setIsSuccess(false)
+      toast({
+        title: "Error",
+        description: "Failed to update Checkout.com configuration. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div>
       <Header />
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Configure Checkout.com</h1>
-          <Button onClick={handleSave}>Save Changes</Button>
-        </div>
-
-        <div className="space-y-6">
-          {/* Sandbox Environment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Sandbox Environment API</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Public API Key
-                  </label>
-                  <Input
-                    type="password"
-                    placeholder="Enter sandbox public API key"
-                    value={sandboxPublicKey}
-                    onChange={(e) => setSandboxPublicKey(e.target.value)}
-                    className="w-full max-w-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Secret API Key
-                  </label>
-                  <Input
-                    type="password"
-                    placeholder="Enter sandbox secret API key"
-                    value={sandboxSecretKey}
-                    onChange={(e) => setSandboxSecretKey(e.target.value)}
-                    className="w-full max-w-xl"
-                  />
-                </div>
-                <p className="text-sm text-gray-500">
-                  Use this environment for testing payments without processing real transactions.
-                </p>
+      <div className="mt-14 p-6">
+        <h1 className="text-3xl font-bold mb-6">Configure Checkout.com</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle>Checkout.com API Configuration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Secret Key (Sandbox)</label>
+                <Input
+                  type="text"
+                  placeholder="Enter your Checkout.com Secret Key"
+                  value={secretKey}
+                  onChange={(e) => setSecretKey(e.target.value)}
+                />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Production Environment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Production Environment API</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Public API Key
-                  </label>
-                  <Input
-                    type="password"
-                    placeholder="Enter production public API key"
-                    value={productionPublicKey}
-                    onChange={(e) => setProductionPublicKey(e.target.value)}
-                    className="w-full max-w-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Secret API Key
-                  </label>
-                  <Input
-                    type="password"
-                    placeholder="Enter production secret API key"
-                    value={productionSecretKey}
-                    onChange={(e) => setProductionSecretKey(e.target.value)}
-                    className="w-full max-w-xl"
-                  />
-                </div>
-                <p className="text-sm text-gray-500">
-                  Use this environment for processing real transactions in your live application.
-                </p>
+              <div>
+                <label className="text-sm font-medium">Public Key (Sandbox)</label>
+                <Input
+                  type="text"
+                  placeholder="Enter your Checkout.com Public Key"
+                  value={publicKey}
+                  onChange={(e) => setPublicKey(e.target.value)}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              {isSuccess && (
+                <div className="flex items-center text-green-600 bg-green-50 p-3 rounded-md">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  <span>Configuration successfully updated!</span>
+                </div>
+              )}
+
+              <Button 
+                className="w-full" 
+                onClick={handleSaveChanges}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
